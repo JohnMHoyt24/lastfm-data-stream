@@ -1,4 +1,5 @@
 # routers/sync.py
+import logging
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
@@ -10,11 +11,13 @@ from database import get_db, SessionLocal
 import models
 from schemas import MusicTrackCreate
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/sync", tags=["Synchronizations"])
 
 def fetch_and_store_from_lastfm():
     """Isolated background logic targeting the Last.fm pipeline."""
-    url = "http://audioscrobbler.com"
+    url = "https://ws.audioscrobbler.com/2.0/"
     params = {
         "method": "user.getrecenttracks",
         "user": settings.LASTFM_USERNAME,
@@ -22,12 +25,19 @@ def fetch_and_store_from_lastfm():
         "format": "json",
         "limit": 50
     }
-    
-    response = httpx.get(url, params=params)
-    if response.status_code != 200:
+
+    try:
+        response = httpx.get(url, params=params, timeout=10)
+        response.raise_for_status()
+    except httpx.HTTPError:
+        logger.exception("Last.fm request failed")
         return
-        
+
     data = response.json()
+    if "error" in data:
+        logger.error("Last.fm API error %s: %s", data["error"], data.get("message"))
+        return
+
     tracks = data.get("recenttracks", {}).get("track", [])
     
     db: Session = SessionLocal()
@@ -59,9 +69,9 @@ def fetch_and_store_from_lastfm():
             db.execute(stmt)
             
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
-        print(f"Error executing backend router task: {e}")
+        logger.exception("Failed to store Last.fm tracks")
     finally:
         db.close()
 
