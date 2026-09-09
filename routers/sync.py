@@ -48,20 +48,29 @@ def fetch_and_store_from_lastfm():
                 
             uts_timestamp = int(track["date"]["uts"])
             played_at_dt = datetime.fromtimestamp(uts_timestamp, tz=timezone.utc)
-            
+
+            image_url = next(
+                (img["#text"] for img in track.get("image", []) if img.get("size") == "extralarge" and img.get("#text")),
+                None
+            )
+
             track_data = MusicTrackCreate(
                 user_id=settings.LASTFM_USERNAME,
                 track_id=track.get("mbid", track["name"] + track["artist"]["#text"]),
                 title=track["name"],
                 artist=track["artist"]["#text"],
+                image_url=image_url,
+                track_url=track.get("url"),
                 played_at=played_at_dt
             )
-            
+
             stmt = insert(models.SpotifyHistory).values(
                 user_id=track_data.user_id,
                 track_id=track_data.track_id,
                 title=track_data.title,
                 artist=track_data.artist,
+                image_url=track_data.image_url,
+                track_url=track_data.track_url,
                 played_at=track_data.played_at
             )
             

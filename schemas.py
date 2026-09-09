@@ -7,6 +7,8 @@ class MusicTrackBase(BaseModel):
     track_id: str
     title: str
     artist: str
+    image_url: str | None = None
+    track_url: str | None = None
     played_at: datetime
 
 class MusicTrackCreate(MusicTrackBase):

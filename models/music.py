@@ -11,6 +11,8 @@ class SpotifyHistory(Base):
     track_id = Column(String, nullable=False)
     title = Column(String, nullable=False)
     artist = Column(String, nullable=False)
+    image_url = Column(String, nullable=True)
+    track_url = Column(String, nullable=True)
     played_at = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
