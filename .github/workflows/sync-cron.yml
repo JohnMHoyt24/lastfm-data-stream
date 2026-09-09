@@ -1,0 +1,13 @@
+name: Trigger Last.fm sync
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /sync endpoint
+        run: curl -fsS -X POST https://lastfm-data-stream.onrender.com/sync
