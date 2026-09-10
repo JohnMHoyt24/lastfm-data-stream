@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from database import engine, Base
 import models  # Registers SQLAlchemy schemas
-from routers import sync, tracks
+from routers import sync, tracks, admin
 
 app = FastAPI(title="Music History Tracker")
 
@@ -21,6 +21,7 @@ Base.metadata.create_all(bind=engine)
 # Mount separate router branches cleanly
 app.include_router(sync.router)
 app.include_router(tracks.router)
+app.include_router(admin.router)
 
 @app.get("/")
 def health_check():

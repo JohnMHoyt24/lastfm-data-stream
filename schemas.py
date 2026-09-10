@@ -20,3 +20,16 @@ class MusicTrackResponse(MusicTrackBase):
 
     class Config:
         from_attributes = True
+
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+class AdminLoginResponse(BaseModel):
+    token: str
+
+class HiddenTracksResponse(BaseModel):
+    hidden_ids: list[str]
+
+class HideTrackRequest(BaseModel):
+    id: str
